@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Idea {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  votes       Int     @default(0)
+  votesRel    Vote[]  @relation("IdeaVotes")
+  createdAt   DateTime @default(now())
+}
+
+model Vote {
+  id        Int     @id @default(autoincrement())
+  idea      Idea    @relation(fields: [ideaId], references: [id], name: "IdeaVotes")
+  ideaId    Int
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@unique([ideaId, ip])
+  @@index([ip])
+}
+
+model IpLock {
+  ip        String  @id
+  createdAt DateTime @default(now())
+}
