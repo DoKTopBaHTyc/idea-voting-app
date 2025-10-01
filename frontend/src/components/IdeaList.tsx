@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import api from '../api';
+import { useEffect, useState } from "react";
+import api from "../api";
 
 type Idea = {
   id: number;
@@ -19,10 +19,10 @@ export default function IdeaList() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await api.get<Idea[]>('/ideas');
+      const resp = await api.get<Idea[]>("/ideas");
       setIdeas(resp.data);
     } catch (e: any) {
-      setError('Failed to load ideas');
+      setError("Failed to load ideas");
     } finally {
       setLoading(false);
     }
@@ -38,12 +38,18 @@ export default function IdeaList() {
     try {
       await api.post(`/ideas/${id}/vote`);
       // оптимистично обновим UI: увеличим голос и пометим voted
-      setIdeas(prev => prev.map(item => item.id === id ? { ...item, votes: item.votes + 1, voted: true } : item));
+      setIdeas((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? { ...item, votes: item.votes + 1, voted: true }
+            : item
+        )
+      );
     } catch (e: any) {
       if (e?.response?.status === 409) {
-        setError(e.response.data?.error || 'Conflict: cannot vote');
+        setError(e.response.data?.error || "Conflict: cannot vote");
       } else {
-        setError('Vote failed');
+        setError("Vote failed");
       }
     } finally {
       setVotingId(null);
@@ -51,13 +57,14 @@ export default function IdeaList() {
   };
 
   if (loading) return <div>Loading ideas...</div>;
-  if (error && ideas.length === 0) return <div className="alert alert-danger">{error}</div>;
+  if (error && ideas.length === 0)
+    return <div className="alert alert-danger">{error}</div>;
 
   return (
     <>
       {error && <div className="alert alert-danger">{error}</div>}
       <div className="row">
-        {ideas.map(i => (
+        {ideas.map((i) => (
           <div key={i.id} className="col-md-6 mb-3">
             <div className="card h-100">
               <div className="card-body d-flex flex-column">
@@ -65,14 +72,19 @@ export default function IdeaList() {
                 <p className="card-text text-muted">{i.description}</p>
                 <div className="mt-auto d-flex justify-content-between align-items-center">
                   <div>
-                    <strong>{i.votes}</strong> {i.votes === 1 ? 'vote' : 'votes'}
+                    <strong>{i.votes}</strong>{" "}
+                    {i.votes === 1 ? "vote" : "votes"}
                   </div>
                   <button
                     className="btn btn-primary"
                     disabled={i.voted || votingId === i.id}
                     onClick={() => onVote(i.id)}
                   >
-                    {i.voted ? 'Voted' : (votingId === i.id ? 'Voting...' : 'Vote')}
+                    {i.voted
+                      ? "Voted"
+                      : votingId === i.id
+                      ? "Voting..."
+                      : "Vote"}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,3 @@
-import React from 'react';
 import IdeaList from './components/IdeaList';
 
 function App() {

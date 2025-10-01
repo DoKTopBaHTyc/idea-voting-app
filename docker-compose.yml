@@ -1,15 +1,44 @@
-version: '3.8'
+version: "3.9"
+
 services:
-  postgres:
+  db:
     image: postgres:15
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ideasdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/ideasdb
+    ports:
+      - "4000:4000"
+    command: sh -c "npx prisma migrate deploy && npx ts-node prisma/seed.ts && npm run start"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      - frontend
+      - backend
+
 volumes:
-  pgdata:
+  db_data:
